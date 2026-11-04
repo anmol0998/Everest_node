@@ -1,10 +1,16 @@
-// 2. Switch to DTC BU
-await Promise.all([
-  page.waitForResponse((r) => r.url().includes("/account/switchaccount"), { timeout: 30000 }),
-  page.selectOption(CFG.buSelect, CFG.buValue),
-]);
-await page.waitForLoadState("networkidle");
+    // 2. Switch to DTC BU (skip if already on it)
+    await page.waitForSelector(CFG.buSelect, { state: "attached", timeout: 30000 });
+    const current = await page.locator(CFG.buSelect).inputValue();
+    console.log("Account before:", current);
 
-const chosen = await page.locator(`${CFG.buSelect} option:checked`).innerText();
-console.log("Account now:", chosen.trim());   // should say DTC BU 515008882
-await page.screenshot({ path: "after-switch.png" });
+    if (current !== "1025648") {
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: "load", timeout: 30000 }),
+        page.selectOption(CFG.buSelect, "1025648").catch(() => {}), // page reloads mid-call, so ignore that error
+      ]);
+      await page.waitForLoadState("networkidle");
+    }
+
+    const chosen = await page.locator(`${CFG.buSelect} option:checked`).innerText();
+    console.log("Account now:", chosen.trim());   // should say DTC BU 515008882
+    await page.screenshot({ path: "after-switch.png" });
