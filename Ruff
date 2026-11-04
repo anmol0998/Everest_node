@@ -1,10 +1,10 @@
-// 2. Switch to DTC BU (native <select>, page reloads on change)
-const value = await page
-  .locator(`${CFG.buSelect} option`, { hasText: CFG.buId })
-  .first()
-  .getAttribute("value");
-
+// 2. Switch to DTC BU
 await Promise.all([
-  page.waitForNavigation({ waitUntil: "networkidle" }),
-  page.selectOption(CFG.buSelect, value),
+  page.waitForResponse((r) => r.url().includes("/account/switchaccount"), { timeout: 30000 }),
+  page.selectOption(CFG.buSelect, CFG.buValue),
 ]);
+await page.waitForLoadState("networkidle");
+
+const chosen = await page.locator(`${CFG.buSelect} option:checked`).innerText();
+console.log("Account now:", chosen.trim());   // should say DTC BU 515008882
+await page.screenshot({ path: "after-switch.png" });
