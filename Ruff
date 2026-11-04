@@ -1,0 +1,10 @@
+// 2. Switch to DTC BU (native <select>, page reloads on change)
+const value = await page
+  .locator(`${CFG.buSelect} option`, { hasText: CFG.buId })
+  .first()
+  .getAttribute("value");
+
+await Promise.all([
+  page.waitForNavigation({ waitUntil: "networkidle" }),
+  page.selectOption(CFG.buSelect, value),
+]);
